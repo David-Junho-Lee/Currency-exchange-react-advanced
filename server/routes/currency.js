@@ -1,13 +1,12 @@
 const express = require('express')
-
-const db = require('../db/fruits')
-
 const router = express.Router()
+const request = require('superagent')
 
 router.get('/', (req, res) => {
-  db.getFruits()
+  request
+    .get('https://api.apilayer.com/fixer/latest')
     .then((results) => {
-      res.json({ fruits: results.map((fruit) => fruit.name) })
+      res.json(results.text)
     })
     .catch((err) => {
       console.log(err)
