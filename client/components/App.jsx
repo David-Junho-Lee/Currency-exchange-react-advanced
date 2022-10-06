@@ -1,111 +1,96 @@
-import React, { useRef, useEffect } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
+import React, { useEffect, useState } from 'react'
+import CurrencyInput from './CurrencyInput'
+import axios from 'axios'
 
 function App() {
-  const ref = useRef(null)
-  let currencyRatio = {
-    USD: {
-      USD: 1,
-      AUD: 1.54,
-      NZD: 1.75,
-      KRW: 1432.44,
-      unit: 'Dollar',
-    },
-    KRW: {
-      USD: 0.0007,
-      AUD: 0.0011,
-      NZD: 0.0012,
-      KRW: 1,
-      unit: 'Won',
-    },
-    AUD: {
-      USD: 0.65,
-      AUD: 1,
-      NZD: 1.13,
-      KRW: 928.26,
-      unit: 'Dollar',
-    },
-    NZD: {
-      USD: 0.57,
-      AUD: 0.88,
-      NZD: 1,
-      KRW: 818.16,
-      unit: 'Dollar',
-    },
+  const [amount1, setAmount1] = useState(0)
+  const [amount2, setAmount2] = useState(0)
+  const [currency1, setCurrency1] = useState('NZD')
+  const [currency2, setCurrency2] = useState('USD')
+  const [rates, setRates] = useState([])
+
+  useEffect(() => {
+    axios
+      .get(
+        `https://api.apilayer.com/fixer/latest?apikey=gyyMG3lFiTP0JsLewtQ9V0PPr4ixRWuz`
+      )
+      .then((response) => {
+        setRates(response.data.rates)
+      })
+      .catch((err) => {
+        console.log(err)
+      })
+  }, [])
+
+  // useEffect(() => {
+  //   axios
+  //     .get(
+  //       `https://api.apilayer.com/fixer/symbols?apikey=gyyMG3lFiTP0JsLewtQ9V0PPr4ixRWuz`
+  //     )
+  //     .then((response) => {
+  //       setRates(response.data.rates)
+  //     })
+  //     .catch((err) => {
+  //       console.log(err)
+  //     })
+  // }, [currency1])
+
+  // useEffect(() => {
+  //   axios
+  //     .get(
+  //       `https://api.apilayer.com/fixer/symbols?apikey=gyyMG3lFiTP0JsLewtQ9V0PPr4ixRWuz`
+  //     )
+  //     .then((response) => {
+  //       setRates(response.data.rates)
+  //     })
+  //     .catch((err) => {
+  //       console.log(err)
+  //     })
+  // }, [currency2])
+
+  useEffect(() => {
+    if (rates) {
+      handleAmount1Change(1)
+    }
+  }, [rates])
+
+  function handleAmount1Change(amount1) {
+    setAmount2((amount1 * rates[currency2]) / rates[currency1])
+    setAmount1(amount1)
   }
 
-  let fromCurrency = 'NZD'
-  let toCurrency = 'USD'
+  function handleCurrency1Change(currency1) {
+    setAmount2((amount1 * rates[currency2]) / rates[currency1])
+    setCurrency1(currency1)
+  }
 
-  function convert(type) {
-    let amount = 0
-    if (type == 'from') {
-      amount = console.log(amount)
-    }
+  function handleAmount2Change(amount2) {
+    setAmount1((amount2 * rates[currency1]) / rates[currency2])
+    setAmount2(amount2)
+  }
+
+  function handleCurrency2Change(currency2) {
+    setAmount1((amount2 * rates[currency1]) / rates[currency2])
+    setCurrency2(currency2)
   }
   return (
     <>
-      <h1>Curreny Exchange</h1>
-      <div className="exchange-box">
-        <div className="dropdown">
-          <button className="dropbtn">
-            <img className="flag-img" src="./images/new-zealand.png" />
-            NZD
-          </button>
-          <div className="dropdown-content">
-            <p id="USD">
-              <img className="flag-img" src="./images/united-states.png" />
-              USD
-            </p>
-            <p id="KRW">
-              <img className="flag-img" src="./images/south-korea.png" />
-              USD
-            </p>
-            <p id="AUD">
-              <img className="flag-img" src="./images/australia.png" />
-              USD
-            </p>
-            <p id="NZD">
-              <img className="flag-img" src="./images/new-zealand.png" />
-              USD
-            </p>
-          </div>
-        </div>
-        <div className="input-box" onKeyUp={convert('from')}>
-          <input type="text" id="from-input" />
-          <div id="from-unit">Dollar</div>
-        </div>
-      </div>
-      <h1 className="equal-sign">=</h1>
-      <div className="exchange-box">
-        <div className="dropdown">
-          <button className="dropbtn">
-            <img className="flag-img" src="./images/new-zealand.png" />
-            NZD
-          </button>
-          <div className="dropdown-content">
-            <p id="USD">
-              <img className="flag-img" src="./images/united-states.png" />
-              USD
-            </p>
-            <p id="KRW">
-              <img className="flag-img" src="./images/south-korea.png" />
-              USD
-            </p>
-            <p id="AUD">
-              <img className="flag-img" src="./images/australia.png" />
-              USD
-            </p>
-            <p id="NZD">
-              <img className="flag-img" src="./images/new-zealand.png" />
-              USD
-            </p>
-          </div>
-        </div>
-        <div className="input-box" onKeyUp={convert()}>
-          <input type="text" id="from-input" />
-          <div id="from-unit">Dollar</div>
-        </div>
+      <h1>Currency Exchange</h1>
+      <div>
+        <CurrencyInput
+          onAmountChange={handleAmount1Change}
+          onCurrencyChange={handleCurrency1Change}
+          currencies={Object.keys(rates)}
+          amount={amount1}
+          currency={currency1}
+        />
+        <CurrencyInput
+          onAmountChange={handleAmount2Change}
+          onCurrencyChange={handleCurrency2Change}
+          currencies={Object.keys(rates)}
+          amount={amount2}
+          currency={currency2}
+        />
       </div>
     </>
   )
